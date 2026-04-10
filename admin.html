@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Admin - Pátio Santa Maria</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #2c3e50; color: white; }
+        .box { background: white; color: #333; padding: 20px; border-radius: 10px; max-width: 450px; margin: auto; }
+        h2 { text-align: center; color: #2c3e50; }
+        .turno-admin { padding: 12px; margin: 8px 0; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; text-align: center; font-weight: bold; transition: 0.2s; }
+        .ocupado { background: #e74c3c; color: white; border-color: #c0392b; }
+        .disponivel { background: #f9f9f9; color: #2ecc71; }
+        select, input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+        .instrucao { font-size: 0.8em; color: #666; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Admin - Pátio Santa Maria</h2>
+        <label>Data:</label>
+        <input type="date" id="dataAdmin" onchange="carregarAdmin()">
+        <label>Quadra:</label>
+        <select id="quadraAdmin" onchange="carregarAdmin()">
+            <option value="voley1">Vôlei 1</option>
+            <option value="voley2">Vôlei 2</option>
+            <option value="futbol">Futebol</option>
+        </select>
+        <hr>
+        <p class="instrucao">Clique no horário para alternar entre Disponível e PAGO</p>
+        <div id="listaAdmin"></div>
+    </div>
+
+    <script>
+        const DB_URL = "https://arena-gt-default-rtdb.firebaseio.com/reservas"; 
+
+        async function carregarAdmin() {
+            const data = document.getElementById('dataAdmin').value;
+            const quadra = document.getElementById('quadraAdmin').value;
+            if(!data) return;
+
+            const res = await fetch(`${DB_URL}/${data}/${quadra}.json`);
+            const ocupados = await res.json() || {};
+            const lista = document.getElementById('listaAdmin');
+            lista.innerHTML = '';
+
+            for (let h = 10; h < 22; h++) {
+                const id = h + ":00";
+                const div = document.createElement('div');
+                const estaPago = ocupados[id] === "confirmado";
+                div.className = `turno-admin ${estaPago ? 'ocupado' : 'disponivel'}`;
+                div.innerText = id + (estaPago ? " - PAGO" : " - DISPONÍVEL");
+                
+                div.onclick = async () => {
+                    const novoEstado = estaPago ? null : "confirmado";
+                    await fetch(`${DB_URL}/${data}/${quadra}/${id}.json`, {
+                        method: 'PUT',
+                        body: JSON.stringify(novoEstado)
+                    });
+                    carregarAdmin();
+                };
+                lista.appendChild(div);
+            }
+        }
+        document.getElementById('dataAdmin').value = new Date().toISOString().split('T')[0];
+        carregarAdmin();
+    </script>
+</body>
+</html>
