@@ -2,24 +2,24 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Admin - Pátio Santa Maria</title>
+    <title>Admin - Pátio Santa Maria</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background: #2c3e50; color: white; }
-        .box { background: white; color: #333; padding: 20px; border-radius: 10px; max-width: 450px; margin: auto; }
+        .box { background: white; color: #333; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
         h2 { text-align: center; color: #2c3e50; }
-        .turno-admin { padding: 12px; margin: 8px 0; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; text-align: center; font-weight: bold; }
-        .ocupado { background: #e74c3c; color: white; }
+        .turno-admin { padding: 12px; margin: 5px 0; border-radius: 5px; cursor: pointer; text-align: center; font-weight: bold; border: 1px solid #ccc; }
+        .ocupado { background: #e74c3c; color: white; border-color: #c0392b; }
         .disponivel { background: #f9f9f9; color: #2ecc71; }
-        select, input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
+        select, input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; box-sizing: border-box; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h2>Admin - Pátio Santa Maria</h2>
+        <h2>Painel Admin</h2>
         <label>Data:</label>
-        <input type="date" id="dataAdmin" onchange="carregarAdmin()">
+        <input type="date" id="dA" onchange="ver()">
         <label>Quadra:</label>
-        <select id="quadraAdmin" onchange="carregarAdmin()">
+        <select id="qA" onchange="ver()">
             <option value="voley1">Vôlei 1</option>
             <option value="voley2">Vôlei 2</option>
             <option value="voley3">Vôlei 3</option>
@@ -27,42 +27,36 @@
             <option value="futbol">Futebol</option>
         </select>
         <hr>
-        <div id="listaAdmin"></div>
+        <div id="lista"></div>
     </div>
-
     <script>
-        const DB_URL = "https://arena-gt-default-rtdb.firebaseio.com/reservas"; 
+        const DB_URL = "https://patio-santa-maria-a0eb5-default-rtdb.firebaseio.com/reservas"; 
 
-        async function carregarAdmin() {
-            const data = document.getElementById('dataAdmin').value;
-            const quadra = document.getElementById('quadraAdmin').value;
-            if(!data) return;
-
-            const res = await fetch(`${DB_URL}/${data}/${quadra}.json`);
-            const ocupados = await res.json() || {};
-            const lista = document.getElementById('listaAdmin');
+        async function ver() {
+            const d = document.getElementById('dA').value;
+            const q = document.getElementById('qA').value;
+            const res = await fetch(`${DB_URL}/${d}/${q}.json`);
+            const data = await res.json() || {};
+            const lista = document.getElementById('lista');
             lista.innerHTML = '';
-
             for (let h = 10; h < 22; h++) {
                 const id = h + ":00";
+                const pago = data[id] === "confirmado";
                 const div = document.createElement('div');
-                const estaPago = ocupados[id] === "confirmado";
-                div.className = `turno-admin ${estaPago ? 'ocupado' : 'disponivel'}`;
-                div.innerText = id + (estaPago ? " - PAGO" : " - DISPONÍVEL");
-                
+                div.className = 'turno-admin ' + (pago ? 'ocupado' : 'disponivel');
+                div.innerText = id + (pago ? " - PAGO" : " - DISPONÍVEL");
                 div.onclick = async () => {
-                    const novoEstado = estaPago ? null : "confirmado";
-                    await fetch(`${DB_URL}/${data}/${quadra}/${id}.json`, {
+                    await fetch(`${DB_URL}/${d}/${q}/${id}.json`, {
                         method: 'PUT',
-                        body: JSON.stringify(novoEstado)
+                        body: JSON.stringify(pago ? null : "confirmado")
                     });
-                    carregarAdmin();
+                    ver();
                 };
                 lista.appendChild(div);
             }
         }
-        document.getElementById('dataAdmin').value = new Date().toISOString().split('T')[0];
-        carregarAdmin();
+        document.getElementById('dA').value = new Date().toISOString().split('T')[0];
+        ver();
     </script>
 </body>
 </html>

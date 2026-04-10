@@ -6,42 +6,74 @@
     <title>Pátio Santa Maria - Reservas</title>
     <style>
         :root { --disponivel: #2ecc71; --provisorio: #f1c40f; --ocupado: #e74c3c; --dark: #2c3e50; }
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; background: #f4f7f6; color: var(--dark); }
+        body { font-family: sans-serif; margin: 0; padding: 15px; background: #f4f7f6; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h1 { text-align: center; margin-bottom: 5px; color: var(--dark); }
-        .subtitle { text-align: center; font-size: 0.85em; color: #7f8c8d; margin-bottom: 20px; }
-        label { font-weight: bold; font-size: 0.9em; display: block; margin-top: 10px; }
+        h1 { text-align: center; color: var(--dark); margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-top: 10px; font-size: 0.9em; }
         select, input { width: 100%; padding: 12px; margin: 5px 0 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
-        .grid-turnos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .turno { padding: 15px; text-align: center; border-radius: 8px; background: var(--disponivel); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
-        .turno.provisorio { background: var(--provisorio); color: var(--dark); border-color: #d4ac0d; }
-        .turno.ocupado { background: var(--ocupado); cursor: not-allowed; opacity: 1; }
-        .btn-whatsapp { display: block; width: 100%; padding: 15px; margin-top: 25px; background: #25d366; color: white; text-align: center; text-decoration: none; font-weight: bold; border-radius: 8px; box-sizing: border-box; }
-        .loading { text-align: center; grid-column: span 2; padding: 20px; color: #7f8c8d; }
+        .grid-turnos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .turno { padding: 15px; text-align: center; border-radius: 8px; background: var(--disponivel); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .turno.provisorio { background: var(--provisorio); color: var(--dark); border: 2px solid #d4ac0d; }
+        .turno.ocupado { background: var(--ocupado); cursor: not-allowed; opacity: 0.8; }
+        .btn-whatsapp { display: block; width: 100%; padding: 15px; margin-top: 25px; background: #25d366; color: white; text-align: center; text-decoration: none; font-weight: bold; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .loading { text-align: center; grid-column: span 2; padding: 20px; color: #666; }
     </style>
 </head>
 <body>
-
 <div class="container">
     <h1>Pátio Santa Maria</h1>
-    <p class="subtitle">Itapoá, SC - Agendamento Online</p>
-
-    <label>1. Selecione a Quadra:</label>
-    <select id="quadra" onchange="carregarReservas()">
+    <label>Selecione a Quadra:</label>
+    <select id="quadra" onchange="carregar()">
         <option value="voley1">Vôlei 1</option>
         <option value="voley2">Vôlei 2</option>
         <option value="voley3">Vôlei 3</option>
         <option value="voley4">Vôlei 4</option>
         <option value="futbol">Futebol</option>
     </select>
-
-    <label>2. Selecione a Data:</label>
-    <input type="date" id="data" onchange="carregarReservas()">
-
+    <label>Selecione a Data:</label>
+    <input type="date" id="data" onchange="carregar()">
     <div id="contenedorTurnos" class="grid-turnos"></div>
-
-    <a href="#" class="btn-whatsapp" onclick="enviarWhatsapp()">Confirmar Reserva via WhatsApp</a>
+    <a href="#" class="btn-whatsapp" onclick="enviar()">Confirmar Reserva via WhatsApp</a>
 </div>
-
 <script>
-    const
+    const DB_URL = "https://patio-santa-maria-a0eb5-default-rtdb.firebaseio.com/reservas"; 
+    const telAdmin = "5548974002568";
+
+    const dInput = document.getElementById('data');
+    dInput.value = new Date().toISOString().split('T')[0];
+
+    async function carregar() {
+        const q = document.getElementById('quadra').value;
+        const d = dInput.value;
+        const cont = document.getElementById('contenedorTurnos');
+        cont.innerHTML = '<div class="loading">Carregando horários...</div>';
+        try {
+            const res = await fetch(`${DB_URL}/${d}/${q}.json`);
+            const data = await res.json() || {};
+            cont.innerHTML = '';
+            for (let h = 10; h < 22; h++) {
+                const id = h + ":00";
+                const pago = data[id] === "confirmado";
+                const div = document.createElement('div');
+                div.className = 'turno ' + (pago ? 'ocupado' : '');
+                div.innerText = id + (pago ? " (Pago)" : "");
+                div.onclick = () => { if(!pago) div.classList.toggle('provisorio'); };
+                cont.appendChild(div);
+            }
+        } catch (e) { cont.innerHTML = 'Erro de conexão.'; }
+    }
+
+    function enviar() {
+        const sel = document.querySelectorAll('.turno.provisorio');
+        if (sel.length === 0) return alert("Selecione um horário.");
+        let hrs = "";
+        sel.forEach(s => hrs += s.innerText + " ");
+        let qText = document.getElementById('quadra').options[document.getElementById('quadra').selectedIndex].text;
+        let dBr = dInput.value.split('-').reverse().join('/');
+        const msg = "Ola Patio Santa Maria! Gostaria de reservar a quadra " + qText + " para o dia " + dBr + " nos horarios " + hrs;
+        window.open("https://wa.me/" + telAdmin + "?text=" + encodeURIComponent(msg), '_blank');
+    }
+    carregar();
+</script>
+</body>
+</html>
