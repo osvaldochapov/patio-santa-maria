@@ -16,7 +16,7 @@
         .turno { padding: 15px; text-align: center; border-radius: 8px; background: var(--disponivel); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
         .turno.provisorio { background: var(--provisorio); color: var(--dark); border-color: #d4ac0d; }
         .turno.ocupado { background: var(--ocupado); cursor: not-allowed; opacity: 1; }
-        .btn-whatsapp { display: block; width: 100%; padding: 15px; margin-top: 25px; background: #25d366; color: white; text-align: center; text-decoration: none; font-weight: bold; border-radius: 8px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(37,211,102,0.3); }
+        .btn-whatsapp { display: block; width: 100%; padding: 15px; margin-top: 25px; background: #25d366; color: white; text-align: center; text-decoration: none; font-weight: bold; border-radius: 8px; box-sizing: border-box; }
         .loading { text-align: center; grid-column: span 2; padding: 20px; color: #7f8c8d; }
     </style>
 </head>
@@ -30,10 +30,18 @@
     <select id="quadra" onchange="carregarReservas()">
         <option value="voley1">Vôlei 1</option>
         <option value="voley2">Vôlei 2</option>
+        <option value="voley3">Vôlei 3</option>
+        <option value="voley4">Vôlei 4</option>
         <option value="futbol">Futebol</option>
     </select>
 
     <label>2. Selecione a Data:</label>
     <input type="date" id="data" onchange="carregarReservas()">
 
-    <div id="contenedorTurnos" class
+    <div id="contenedorTurnos" class="grid-turnos"></div>
+
+    <a href="#" class="btn-whatsapp" onclick="enviarWhatsapp()">Confirmar Reserva via WhatsApp</a>
+</div>
+
+<script>
+    const

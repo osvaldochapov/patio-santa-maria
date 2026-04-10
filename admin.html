@@ -7,11 +7,10 @@
         body { font-family: sans-serif; padding: 20px; background: #2c3e50; color: white; }
         .box { background: white; color: #333; padding: 20px; border-radius: 10px; max-width: 450px; margin: auto; }
         h2 { text-align: center; color: #2c3e50; }
-        .turno-admin { padding: 12px; margin: 8px 0; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; text-align: center; font-weight: bold; transition: 0.2s; }
-        .ocupado { background: #e74c3c; color: white; border-color: #c0392b; }
+        .turno-admin { padding: 12px; margin: 8px 0; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; text-align: center; font-weight: bold; }
+        .ocupado { background: #e74c3c; color: white; }
         .disponivel { background: #f9f9f9; color: #2ecc71; }
-        select, input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
-        .instrucao { font-size: 0.8em; color: #666; text-align: center; }
+        select, input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -23,10 +22,11 @@
         <select id="quadraAdmin" onchange="carregarAdmin()">
             <option value="voley1">Vôlei 1</option>
             <option value="voley2">Vôlei 2</option>
+            <option value="voley3">Vôlei 3</option>
+            <option value="voley4">Vôlei 4</option>
             <option value="futbol">Futebol</option>
         </select>
         <hr>
-        <p class="instrucao">Clique no horário para alternar entre Disponível e PAGO</p>
         <div id="listaAdmin"></div>
     </div>
 
